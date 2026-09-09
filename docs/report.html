@@ -95,6 +95,7 @@
 
 <section>
 <h2>2. 시스템 액터 정의</h2>
+<p>액터는 둘뿐이다. 견적을 보내는 프리랜서와, 그걸 받아서 승인하는 클라이언트.</p>
 <table>
   <tr><th width="14%">Actor</th><th width="30%">역할</th><th>상세 제공 기능</th></tr>
   <tr>
@@ -124,9 +125,10 @@
   </tr>
 </table>
 <div class="box">
-클라이언트가 프리랜서 쪽에서 미리 등록해둔 이메일로 회원가입하면, 서버가 그 이메일을 보고
-기존 거래처 레코드에 자동으로 계정을 붙인다. 그래서 프리랜서는 클라이언트가 실제로
-가입했는지 여부와 상관없이 거래처 정보를 먼저 등록해둘 수 있다.
+표에는 안 나와 있는데, 클라이언트 쪽 로그인은 좀 특이하게 동작한다. 프리랜서가 거래처를
+등록할 때 적어둔 이메일로 나중에 그 사람이 실제로 회원가입하면, 서버가 이메일이 같은 걸
+보고 알아서 계정을 거래처 레코드에 붙여준다. 그러니까 프리랜서 입장에서는 클라이언트가
+아직 가입 전이든 후든 상관없이 거래처 정보부터 등록해두면 된다.
 </div>
 </section>
 
@@ -187,14 +189,14 @@
 
 <section>
 <h2>4. 데이터 모델 설계 (ERD 요약)</h2>
-<p>전체 내용은 <code>2반_이름_프리인보이스-DB.dbml</code> 파일에 있다. 여기서는 테이블 5개만 짚는다.</p>
+<p>테이블은 5개로 끝냈다. 전체 컬럼과 관계는 <code>2반_이름_프리인보이스-DB.dbml</code>에 다 있고, 여기서는 각 테이블이 왜 필요한지만 짚는다.</p>
 <table>
   <tr><th width="16%">테이블</th><th>주요 컬럼</th><th>설명</th></tr>
-  <tr><td><b>users</b></td><td>id, email, password, name, role, company_name</td><td>프리랜서/클라이언트 통합 사용자 테이블. role로 구분</td></tr>
-  <tr><td><b>clients</b></td><td>id, freelancer_id(FK), client_user_id(FK, nullable), company_name, email</td><td>프리랜서가 관리하는 거래처. client_user_id는 실제 가입 전까지 NULL</td></tr>
-  <tr><td><b>quotes</b></td><td>id, freelancer_id(FK), client_id(FK), status, total_amount</td><td>견적서 헤더. status(DRAFT/SENT/APPROVED/REJECTED)로 흐름 관리</td></tr>
-  <tr><td><b>quote_items</b></td><td>id, quote_id(FK), name, quantity, unit_price, amount</td><td>견적 라인아이템. amount는 서버가 자동 계산</td></tr>
-  <tr><td><b>invoices</b></td><td>id, quote_id(FK, unique), invoice_number, total_amount, due_date, status</td><td>승인된 견적서 1건당 인보이스 1건. status(UNPAID/PAID/OVERDUE)</td></tr>
+  <tr><td><b>users</b></td><td>id, email, password, name, role, company_name</td><td>프리랜서와 클라이언트를 한 테이블에 담고 role로만 구분했다.</td></tr>
+  <tr><td><b>clients</b></td><td>id, freelancer_id(FK), client_user_id(FK, nullable), company_name, email</td><td>프리랜서가 관리하는 거래처 목록. client_user_id는 가입 전까지 비어 있다.</td></tr>
+  <tr><td><b>quotes</b></td><td>id, freelancer_id(FK), client_id(FK), status, total_amount</td><td>견적서의 헤더 부분. status 값 하나로 DRAFT부터 REJECTED까지 흐름을 다 표현한다.</td></tr>
+  <tr><td><b>quote_items</b></td><td>id, quote_id(FK), name, quantity, unit_price, amount</td><td>견적서에 딸린 품목 줄. amount는 입력값이 아니라 서버 계산값.</td></tr>
+  <tr><td><b>invoices</b></td><td>id, quote_id(FK, unique), invoice_number, total_amount, due_date, status</td><td>인보이스. 견적서 하나당 딱 하나만 나올 수 있다.</td></tr>
 </table>
 <div class="box">
 <b>설계 포인트</b><br>
